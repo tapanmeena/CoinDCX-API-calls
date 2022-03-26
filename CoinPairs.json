@@ -1,0 +1,78 @@
+[
+    {
+        "coindcx_name": "BTCINR",
+        "base_currency_short_name": "INR",
+        "target_currency_short_name": "BTC",
+        "target_currency_name": "Bitcoin",
+        "base_currency_name": "Indian Rupee",
+        "base_currency_precision": 2,
+        "target_currency_precision": 5,
+        "order_types": [
+            "market_order",
+            "limit_order"
+        ],
+        "symbol": "BTCINR",
+        "ecode": "I",
+        "pair": "I-BTC_INR"
+    },
+    {
+        "coindcx_name": "ETHINR",
+        "base_currency_short_name": "INR",
+        "target_currency_short_name": "ETH",
+        "target_currency_name": "Ethereum",
+        "base_currency_name": "Indian Rupee",
+        "base_currency_precision": 2,
+        "target_currency_precision": 4,
+        "order_types": [
+            "limit_order"
+        ],
+        "symbol": "ETHINR",
+        "ecode": "I",
+        "pair": "I-ETH_INR"
+    },
+    {
+        "coindcx_name": "MATICINR",
+        "base_currency_short_name": "INR",
+        "target_currency_short_name": "MATIC",
+        "target_currency_name": "Polygon",
+        "base_currency_name": "Indian Rupee",
+        "base_currency_precision": 3,
+        "target_currency_precision": 0,
+        "order_types": [
+            "limit_order"
+        ],
+        "symbol": "MATICINR",
+        "ecode": "I",
+        "pair": "I-MATIC_INR"
+    },
+    {
+        "coindcx_name": "SOLINR",
+        "base_currency_short_name": "INR",
+        "target_currency_short_name": "SOL",
+        "target_currency_name": "Solana",
+        "base_currency_name": "Indian Rupee",
+        "base_currency_precision": 2,
+        "target_currency_precision": 3,
+        "order_types": [
+            "limit_order"
+        ],
+        "symbol": "SOLINR",
+        "ecode": "I",
+        "pair": "I-SOL_INR"
+    },
+    {
+        "coindcx_name": "RUNEINR",
+        "base_currency_short_name": "INR",
+        "target_currency_short_name": "RUNE",
+        "target_currency_name": "THORChain",
+        "base_currency_name": "Indian Rupee",
+        "base_currency_precision": 2,
+        "target_currency_precision": 3,
+        "order_types": [
+            "limit_order"
+        ],
+        "symbol": "RUNEINR",
+        "ecode": "I",
+        "pair": "I-RUNE_INR"
+    }
+]

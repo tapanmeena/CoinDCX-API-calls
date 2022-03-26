@@ -9,7 +9,7 @@ CoinPair = "I-BTC_INR"
 BUY_THRESHOLD = -0.02
 SELL_THRESHOLD = 0.02
 
-intervals = [300, 600, 900, 1200, 1500, 1800]
+intervals = [300, 600, 900, 1200, 1500, 1800, 2700, 3600]
 # def checkPrice(timestamp)
 
 
