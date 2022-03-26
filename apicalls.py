@@ -1,16 +1,8 @@
 import time
-from decouple import config
 import hmac
 import hashlib
 import json
 import requests
-
-# Enter your API Key and Secret in the .env file.
-# If you don't have one, you can generate it from the website (https://coindcx.com/api-dashboard).
-key = config('key', default='')
-secret = config('secret', default='')
-
-secret_bytes = bytes(secret, encoding='utf-8')
 
 PUBLIC_HOST = 'https://public.coindcx.com'
 API_HOST = 'https://api.coindcx.com'
@@ -37,8 +29,8 @@ def SendPostRequest(url, data, headers):
         return None
 
 
-def GenerateHeaders(key, secret, json_body):
-    signature = hmac.new(secret, json_body.encode(),
+def GenerateHeaders(key, secret_bytes, json_body):
+    signature = hmac.new(secret_bytes, json_body.encode(),
                          hashlib.sha256).hexdigest()
     headers = {
         'Content-Type': 'application/json',
@@ -58,7 +50,7 @@ def GetMarketHistory(pair, interval, startTime=time.time()-300, endTime=time.tim
     interval = m -> minutes, h -> hours, d -> days, w -> weeks, M -> months
 
     """
-    startTime = str(round(startTime) * 1000)
+    startTime = str(round(startTime - 300) * 1000)
     endTime = str(round(endTime) * 1000)
 
     url = PUBLIC_HOST + CANDLES + "?pair=" + pair + "&interval=" + \
@@ -68,7 +60,7 @@ def GetMarketHistory(pair, interval, startTime=time.time()-300, endTime=time.tim
     return data
 
 
-def GetUserBalance(key, secret, coin_name=None):
+def GetUserBalance(key, secret_bytes, coin_name=None):
     # Generating a timestamp
     timeStamp = int(round(time.time() * 1000))
     body = {
@@ -77,7 +69,7 @@ def GetUserBalance(key, secret, coin_name=None):
 
     json_body = json.dumps(body, separators=(',', ':'))
 
-    signature = hmac.new(secret, json_body.encode(),
+    signature = hmac.new(secret_bytes, json_body.encode(),
                          hashlib.sha256).hexdigest()
 
     headers = {
@@ -101,7 +93,7 @@ def GetUserBalance(key, secret, coin_name=None):
             return item
 
 
-def CreateOrder(key, secret, side, orderType, coinPair, pricePerUnit, quantity):
+def CreateOrder(key, secret_bytes, side, orderType, coinPair, pricePerUnit, quantity):
     # Generating a timestamp.
     timeStamp = int(round(time.time() * 1000))
 
@@ -116,7 +108,7 @@ def CreateOrder(key, secret, side, orderType, coinPair, pricePerUnit, quantity):
     json_body = json.dumps(body, separators=(',', ':'))
     url = EXCHANGE_BASE + '/orders/create'
 
-    headers = GenerateHeaders(key, secret, json_body)
+    headers = GenerateHeaders(key, secret_bytes, json_body)
     data = SendPostRequest(url, json_body, headers)
 
     # check if order executed or not

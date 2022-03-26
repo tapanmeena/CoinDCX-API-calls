@@ -1,7 +1,7 @@
 import time
 from xml.etree.ElementTree import PI
-import requests
 from datetime import datetime
+from apicalls import GetMarketHistory
 
 CoinPair = "I-BTC_INR"
 buyPrice = 3300000
@@ -13,27 +13,13 @@ btcInWallet = 0
 investedAmount = moneyInWallet
 
 def getCurrentPrice():
-    timeStamp = int(round(time.time() * 1000))
-    try:
-        url = "https://public.coindcx.com/market_data/candles?pair=I-BTC_INR&interval=1m&startTime={0}".format(timeStamp) #desired market pair.
-        response = requests.get(url)
-        market_data = response.json()
-    except:
-        time.sleep(30)
-        return 0
+    market_data = GetMarketHistory("I-BTC_INR","1m")
     currentPrice = float(market_data[0]['high'])
     return currentPrice
 
-def checkMarketPrice(coinPair, price, pnl, money):
+def checkMarketPrice(coinPair, price):
     global moneyInWallet, PNLtillnow, btcInWallet, counter
-    timeStamp = int(round(time.time() * 1000))
-    url = "https://public.coindcx.com/market_data/candles?pair={1}&interval=1m&startTime={0}".format(timeStamp, coinPair) #desired market pair.
-    try:
-        response = requests.get(url)
-        market_data = response.json()
-    except:
-        time.sleep(30)
-        return
+    market_data = GetMarketHistory(coinPair, "1m")
     currentPrice = float(market_data[0]['high'])
     # currentPrice = tp
     # print ("Current price {0}, requested price {1}".format(currentPrice, price))
@@ -59,9 +45,9 @@ start = time.time()
 while(True):
     # testprice = int(input())
     if counter == 0:
-        checkMarketPrice(CoinPair, buyPrice, PNLtillnow, moneyInWallet)#, testprice)
+        checkMarketPrice(CoinPair, buyPrice)#, testprice)
     else: 
-        checkMarketPrice(CoinPair, sellPrice, PNLtillnow, moneyInWallet)#, testprice)
+        checkMarketPrice(CoinPair, sellPrice)#, testprice)
     end = time.time()
     timeElapsed = end - start
     if timeElapsed >= 900:

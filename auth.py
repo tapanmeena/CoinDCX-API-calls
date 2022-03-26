@@ -3,10 +3,10 @@ import hmac
 import hashlib
 import json
 from math import trunc
-from tabnanny import check
 import time
 import datetime
 import requests
+import apicalls
 
 # Enter your API Key and Secret here. If you don't have one, you can generate it from the website.
 key = config('key',default='')
