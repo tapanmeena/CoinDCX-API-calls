@@ -100,6 +100,20 @@ def GetUserBalance(key, secret_bytes, coin_name=None):
             return item
 
 
+def GetTradeHistory(key, secret_bytes,limit = 500):
+    timeStamp = int(round(time.time() * 1000))
+    url = EXCHANGE_BASE + "/orders/trade_history"
+    body = {
+        "timestamp": timeStamp,
+        "sort": "desc",
+        "limit": limit
+    }
+    json_body = json.dumps(body, separators = (',', ':'))
+    headers = GenerateHeaders(key, secret_bytes, json_body)
+    data = SendPostRequest(url, json_body, headers)
+    return data
+
+
 def CreateOrder(key, secret_bytes, side, orderType, coinPair, pricePerUnit, quantity):
     # Generating a timestamp.
     timeStamp = int(round(time.time() * 1000))
