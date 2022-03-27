@@ -2,17 +2,12 @@
 In this strategy,
 By default we're only picking INR pairs
 The bot checks if the any coin has gone up by more than 5% in the last 5 minutes
-The bot will sell at 3% profit or 2% loss
+The bot will sell at 1% profit or 3% loss
 """
-from dataclasses import dataclass
-from operator import truediv
-from random import randint, random
+from random import randint
 import time
-from urllib import request
-from xml.etree.ElementTree import PI
 from decouple import config
 from math import trunc
-from tabnanny import check
 import datetime
 import requests
 from datetime import datetime,timedelta

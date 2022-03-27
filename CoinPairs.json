@@ -13,7 +13,8 @@
         ],
         "symbol": "BTCINR",
         "ecode": "I",
-        "pair": "I-BTC_INR"
+        "pair": "I-BTC_INR",
+        "active": "true"
     },
     {
         "coindcx_name": "ETHINR",
@@ -28,7 +29,8 @@
         ],
         "symbol": "ETHINR",
         "ecode": "I",
-        "pair": "I-ETH_INR"
+        "pair": "I-ETH_INR",
+        "active": "true"
     },
     {
         "coindcx_name": "MATICINR",
@@ -43,7 +45,8 @@
         ],
         "symbol": "MATICINR",
         "ecode": "I",
-        "pair": "I-MATIC_INR"
+        "pair": "I-MATIC_INR",
+        "active": false
     },
     {
         "coindcx_name": "SOLINR",
@@ -58,7 +61,8 @@
         ],
         "symbol": "SOLINR",
         "ecode": "I",
-        "pair": "I-SOL_INR"
+        "pair": "I-SOL_INR",
+        "active": "true"
     },
     {
         "coindcx_name": "RUNEINR",
@@ -73,6 +77,7 @@
         ],
         "symbol": "RUNEINR",
         "ecode": "I",
-        "pair": "I-RUNE_INR"
+        "pair": "I-RUNE_INR",
+        "active": false
     }
 ]

@@ -1,7 +1,6 @@
 import time
-from xml.etree.ElementTree import PI
 from datetime import datetime
-from apicalls import GetMarketHistory
+from api import GetMarketHistory
 
 CoinPair = "I-BTC_INR"
 buyPrice = 3300000

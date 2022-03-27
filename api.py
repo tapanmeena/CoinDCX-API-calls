@@ -41,7 +41,7 @@ def GenerateHeaders(key, secret_bytes, json_body):
     return headers
 
 
-def GetMarketHistory(pair, interval, startTime=time.time()-300, endTime=time.time()):
+def GetMarketHistory(pair, interval, startTime="", endTime=""):
     """
     function returns last 5 minutes Market history for provided coinpair
     for detailed Market history, use startTime and endTime parameter
@@ -50,11 +50,12 @@ def GetMarketHistory(pair, interval, startTime=time.time()-300, endTime=time.tim
     interval = m -> minutes, h -> hours, d -> days, w -> weeks, M -> months
 
     """
-    startTime = str(round(startTime - 300) * 1000)
-    endTime = str(round(endTime) * 1000)
+    if startTime != "":
+        startTime = str(round(startTime - 300) * 1000)
+    if endTime != "":
+        endTime = str(round(endTime) * 1000)
 
-    url = PUBLIC_HOST + CANDLES + "?pair=" + pair + "&interval=" + \
-        interval + "&startTime=" + startTime + "&endTime=" + endTime
+    url = PUBLIC_HOST + CANDLES + "?pair=" + pair + "&interval=" + interval + "&startTime=" + startTime + "&endTime=" + endTime
     data = SendGetRequest(url)
 
     return data
