@@ -32,7 +32,7 @@ def checkMarketMovement(coinPair, printValue = False):
         priceMovement = (currentPrice - previousPrice)/currentPrice
         
         if printValue:
-            print("Coin-> {4}\tInterval {3}\tCurrentPrice-> {0}\t PreviousPrice-> {1}\t PriceMovement-> {2}\t".format(
+            print("Coin-> {4}\tInterval {3}\tCurrentPrice-> {0}\tPreviousPrice-> {1}\tPriceMovement-> {2}\t".format(
             "₹{:,}".format(currentPrice),"₹{:,}".format(previousPrice), round(priceMovement * 100,5), timeMargin, coinPair))
         if priceMovement <= BUY_THRESHOLD:
             print("\t\t\tBUYING THE FUCKING {0}\t\t\t".format(coinPair))
@@ -40,14 +40,6 @@ def checkMarketMovement(coinPair, printValue = False):
             print("\t\t\SELL THE FUCKING {0}\t\t\t".format(coinPair))
 
 data = ImportFile('CoinPairs.json')
-startTime = time.time()
 while(True):
     for item in data:
         checkMarketMovement(item['pair'])
-    time.sleep(30)
-    current = time.time()
-    if (current - startTime)>900:
-        for item in data:
-            checkMarketMovement(item['pair'], True)
-        startTime = time.time()
-        print("\n")
