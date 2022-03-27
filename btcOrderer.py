@@ -38,12 +38,14 @@ def createOrder(pricePerUnit, quantity, orderType):
     print(data)
     print ("{0} order at {1} for {2} at {3}\n".format(orderType,datetime.datetime.now(), quantity, pricePerUnit))
 
+# pricePerUnitToBuy = 3437000
+# pricePerUnitToSell = 3464800
+pricePerUnitToBuy = int(input("Price per unit to buy BTC at: "))
+pricePerUnitToSell = int(input("Price per unit to sell BTC at: "))
+reduceBalance = 50
+startTime = time.time()
 while(True):
     # print (datetime.datetime.now())
-    pricePerUnitToBuy = 3437000
-    pricePerUnitToSell = 3464800
-    reduceBalance = 50
-
     balancePair = checkUserBalance(secret_bytes, "INR", 50)
     # print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>150))
 
@@ -58,4 +60,15 @@ while(True):
     if balancePair['availableBalance']:
         createOrder(pricePerUnitToSell,balancePair['quantity'],"sell")
     # print("\n")
+
+    currenTime = time.time()
+    # print wallet balance
+    if (currenTime - startTime) > 3600:
+        balancePair = checkUserBalance(secret_bytes, "INR", 50)
+        print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>150))
+        balancePair = checkUserBalance(secret_bytes, "BTC", 0.00001, True)
+        print("{0} present in wallet: {1}".format("BTC",balancePair['availableBalance']>0))
+        print("\n")
+        startTime = time.time()
+
     time.sleep(30)
