@@ -46,7 +46,7 @@
         "symbol": "MATICINR",
         "ecode": "I",
         "pair": "I-MATIC_INR",
-        "active": false
+        "active": "false"
     },
     {
         "coindcx_name": "SOLINR",
@@ -78,6 +78,6 @@
         "symbol": "RUNEINR",
         "ecode": "I",
         "pair": "I-RUNE_INR",
-        "active": false
+        "active": "false"
     }
 ]
