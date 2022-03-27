@@ -9,11 +9,8 @@ import time
 from decouple import config
 from math import trunc
 import datetime
-import requests
 from datetime import datetime,timedelta
-import hmac
-import hashlib
-import json
+import api
 
 # Enter your API Key and Secret here. If you don't have one, you can generate it from the website.
 key = config('key',default='')
@@ -27,67 +24,19 @@ boughtArray = [{'symbol': 'KSMINR', 'price': 12440}, {'symbol': 'ALICEINR', 'pri
 previousChange = boughtArray
 
 def checkUserBalance(secret_bytes, currency, threshold, printAmount = False):
-    # Generating a timestamp
-    timeStamp = int(round(time.time() * 1000))
+    data = api.GetUserBalance(key, secret_bytes, currency)
 
-    body = {
-        "timestamp": timeStamp
-    }
-
-    json_body = json.dumps(body, separators = (',', ':'))
-
-    signature = hmac.new(secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
-    # get user balances
-
-    headers = {
-        'Content-Type': 'application/json',
-        'X-AUTH-APIKEY': key,
-        'X-AUTH-SIGNATURE': signature
-    }
-
-    url = "https://api.coindcx.com/exchange/v1/users/balances"
-    try:
-        response = requests.post(url, data = json_body, headers = headers)
-        data = response.json()
-    except:
-        time.sleep(30)
-        return {"quantity":0,"availableBalance":0}
-
-    for i in data:
-        if i['currency'] == currency and float(i['balance']) > threshold:
-            if printAmount:
-                print ("{0} is {1}".format(currency, i['balance']))
-            return {"quantity":i['balance'],"availableBalance":float(i['balance'])}
-    
+    if float(data['balance']) > threshold:
+        if printAmount:
+            print ("{0} is {1}".format(currency, data['balance']))
+        return {"quantity":data['balance'],"availableBalance":float(data['balance'])}
     return {"quantity":0,"availableBalance":0}
 
 def createOrder(quantity, orderType, market, pricePerUnit):
     global boughtArray, previousChange
-    # Generating a timestamp.
-    timeStamp = int(round(time.time() * 1000))
-
-    body = {
-    "side": orderType,    #Toggle between 'buy' or 'sell'.
-    "order_type": "limit_order", #Toggle between a 'market_order' or 'limit_order'.
-    "market": market, #Replace 'SNTBTC' with your desired market pair.
-    "price_per_unit": pricePerUnit, #This parameter is only required for a 'limit_order'
-    "total_quantity": quantity, #Replace this with the quantity you want
-    "timestamp": timeStamp
-    }
-    json_body = json.dumps(body, separators = (',', ':'))
-
-    signature = hmac.new(secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
-
-    url = "https://api.coindcx.com/exchange/v1/orders/create"
-
-    headers = {
-        'Content-Type': 'application/json',
-        'X-AUTH-APIKEY': key,
-        'X-AUTH-SIGNATURE': signature
-    }
+    
     try:
-        response = requests.post(url, data = json_body, headers = headers)
-        data = response.json()
+        data = api.CreateOrder(key, secret_bytes, orderType, "limit_order", market, pricePerUnit, quantity)
     except:
         time.sleep(30)
         print ("No internet while ",market)
@@ -119,10 +68,8 @@ def createOrder(quantity, orderType, market, pricePerUnit):
             previousChange = tempArray
 
 def checkMarketForBuy():
-    url = "https://api.coindcx.com/exchange/v1/markets_details" #retrieves all pairs
     try:
-        response = requests.get(url)
-        data = response.json()
+        data = api.GetMarketDetails()
     except:
         time.sleep(30)
         print ("no internet while checking market for current prices")
@@ -134,19 +81,13 @@ def checkMarketForBuy():
     coinArray = []
     for item in data:
         if item['coindcx_name'].endswith('INR'):
-            tempURL = "https://public.coindcx.com/market_data/candles?pair={1}&interval=1m&startTime={0}".format(previous, item['pair']) #desired market pair.
-            try:
-                response = requests.get(tempURL)
-                market_data = response.json()
-            except:
-                time.sleep(30)
-                return coinArray
+            market_data = api.GetMarketHistory(item['pair'], "1m", previous)
             # print(tempURL)
             currentIntervalMax = market_data[0]['high']
             currentIntervalMin = market_data[len(market_data)-1]['high']
             delta = (currentIntervalMax - currentIntervalMin)/ currentIntervalMax
             if delta >= DELTA_CHANGE:
-                totalcoins+=1
+                totalcoins += 1
                 coinArray.append({"name":item['coindcx_name'],"max":currentIntervalMax,"min":currentIntervalMin, "delta": delta, "target_precision":item['target_currency_precision']})
     lines = sorted(coinArray, key=lambda k: k['delta'], reverse=True)
     # print (lines)
@@ -155,14 +96,8 @@ def checkMarketForBuy():
 
 def checkMarketForSell(previousPrice):
     global boughtArray
-    url = "https://api.coindcx.com/exchange/v1/markets_details" #retrieves all pairs
+    data = api.GetMarketDetails()
 
-    try:
-        response = requests.get(url)
-        data = response.json()
-    except:
-        time.sleep(30)
-        return previousPrice
     previous = datetime.now()- timedelta(minutes=5)
     previous = datetime.timestamp(previous)
     previous = int(round(previous * 1000))
@@ -170,12 +105,8 @@ def checkMarketForSell(previousPrice):
     for coin in boughtArray:
         for item in data:
             if item['coindcx_name'] == coin['symbol']:
-                tempURL = "https://public.coindcx.com/market_data/candles?pair={1}&interval=1m&startTime={0}".format(previous, item['pair']) #desired market pair.
-                try:
-                    response = requests.get(tempURL)
-                    market_data = response.json()
-                except:
-                    return previousPrice
+                market_data = api.GetMarketHistory(item['pair'], "1m", previous)
+
                 currentPrice = float(market_data[0]['high'])
                 boughtPrice = float(coin['price'])
                 ChangeInPrice = (currentPrice - boughtPrice)/currentPrice
@@ -219,27 +150,14 @@ def truncate(number, decimals=0):
     return trunc(number * factor) / factor
 
 def buyPair(coin):
-    url = "https://api.coindcx.com/exchange/v1/markets_details" #retrieves all pairs
-
-    try:
-        response = requests.get(url)
-        data = response.json()
-    except:
-        time.sleep(30)
-        return 0
+    data = api.GetMarketDetails()
     previous = datetime.now()- timedelta(minutes=5)
     previous = datetime.timestamp(previous)
     previous = int(round(previous * 1000))
     for item in data:
         # print (item)
         if item['coindcx_name'] == coin['name']:
-            tempURL = "https://public.coindcx.com/market_data/candles?pair={1}&interval=1m&startTime={0}".format(previous, item['pair']) #desired market pair.
-            try:
-                response = requests.get(tempURL)
-                market_data = response.json()
-            except:
-                time.sleep(30)
-                return 0
+            market_data = api.GetMarketHistory(item['pair'], "1m", previous)
             currentPrice = float(market_data[0]['high'])
             return currentPrice
 
