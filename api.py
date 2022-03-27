@@ -61,6 +61,12 @@ def GetMarketHistory(pair, interval, startTime="", endTime=""):
     return data
 
 
+def GetMarketDetails():
+    url = EXCHANGE_BASE + "/markets_details"
+    data = SendGetRequest(url)
+    return data
+
+
 def GetUserBalance(key, secret_bytes, coin_name=None):
     # Generating a timestamp
     timeStamp = int(round(time.time() * 1000))
