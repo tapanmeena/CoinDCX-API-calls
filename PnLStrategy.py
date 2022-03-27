@@ -22,10 +22,7 @@ STOP_PROFIT = 0.01
 DELTA_CHANGE = 0.03
 """
 TODO
-Generate bought coin pair array - Done
-Generate previous price coin pair array - for now make it same as bought coin array
-check market for sell opportunity
-include fee amount calculation in PNL logic
+include fee amount calculation in PnL logic
 """
 
 def truncate(number, decimals=0):
@@ -90,7 +87,6 @@ def GenerateBoughtPairArray(coinPairs):
 
     bought_coin_pairs = api.GetUserBalance(key, secret_bytes)
     bought_coin_pairs = [item for item in bought_coin_pairs if item['currency'] != 'INR' and truncate(float(item['balance']), 5) > 0]
-    bought_coin_pairs = [{'balance': '0.007', 'locked_balance': '0.0', 'currency': 'BTC'}]
 
     bought_coin_array = []
     for coin in bought_coin_pairs:
@@ -101,8 +97,41 @@ def GenerateBoughtPairArray(coinPairs):
     return bought_coin_array
 
 
-def checkMarketForSell():
-    return
+def checkMarketForSell(bought_array, previous_change):
+    data = api.GetMarketDetails()
+    coin_symbol_list = [coin['symbol'] for coin in bought_array]
+    data = [item for item in data if item['coindcx_name'] in coin_symbol_list]
+
+    previous = datetime.now() - timedelta(minutes=5)
+    previous = datetime.timestamp(previous)
+    previous = int(round(previous * 1000))
+
+    for coin in bought_array:
+        for item in data:
+            if coin['symbol'] == item['coindcx_name']:
+                market_data = api.GetMarketHistory(item['pair'], "1m", previous)
+
+                currentPrice = float(market_data[0]['high'])
+                boughtPrice = float(coin['bought_price'])
+                ChangeInPrice = (currentPrice - boughtPrice)/currentPrice
+                temp_previous_change = previous_change
+
+                for pItem in previous_change:
+                    if pItem['symbol'] == coin['symbol'] and pItem['bought_price'] != market_data[0]['high']:
+                        currenTime = datetime.today()
+                        print ("Change at {0}".format(currenTime.strftime("%H:%M:%S")))
+                        print ("{0} coin currently at {1}, bought at {3}, previous price was {4} and change is {2}\n".format(coin['symbol'], currentPrice, ChangeInPrice*100, boughtPrice, round(float(pItem['bought_price']),2)))
+                        temp_previous_change.remove(pItem)
+                        temp_previous_change.append({'symbol':coin['symbol'],"bought_price":market_data[0]['high']})
+                        break
+                previous_change = temp_previous_change
+
+                if ChangeInPrice >= STOP_PROFIT or ChangeInPrice <= STOP_LOSS:
+                    balancePair = checkUserBalance(secret_bytes, item['target_currency_short_name'], 0, True)
+                    api.CreateOrder(key, secret_bytes, "sell", "limit_order", item['coindcx_name'], currentPrice, balancePair['quantity'])
+                    print ("----------------------Please sell {0} coin at {1} because currect percentage increase is {2}----------------------".format(coin['symbol'], currentPrice, ChangeInPrice*100))
+                break
+    return previous_change
 
 
 def ImportFile(filename):
@@ -114,10 +143,10 @@ def ImportFile(filename):
 
 
 coin_pairs = ImportFile("CoinPairs.json")
-print(GenerateBoughtPairArray(coin_pairs))
-"""
+start_time = time.time()
+end_time = start_time
 while(True):
-    balancePair = checkUserBalance(secret_bytes, "INR", 200)
+    balancePair = checkUserBalance(secret_bytes, "INR", 150)
     if balancePair['availableBalance']:
         suggestedBuyingArray = CheckMarketCoinPairs(coin_pairs)
         if len(suggestedBuyingArray)>0:
@@ -130,11 +159,13 @@ while(True):
                 buyingAmount = balancePair['availableBalance'] - 50
 
             quantityToBuy = truncate(float(buyingAmount)/pricePerUnitToBuy, selectedCoinPair['target_precision'])
-            # print (buyingAmount, pricePerUnitToBuy, quantityToBuy, selectedCoinPair["name"])
-            # print(quantityToBuy)
             api.CreateOrder(key, secret_bytes, "buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
 
-    boughtArray = GenerateBoughtPairArray()
-    previousChange = checkMarketForSell()
+    if end_time - start_time >= 900 or start_time == end_time:
+        boughtArray = GenerateBoughtPairArray(coin_pairs)
+        previousChange = boughtArray
+
+    previousChange = checkMarketForSell(boughtArray, previousChange)
+
+    end_time = time.time()
     time.sleep(60)
-"""
