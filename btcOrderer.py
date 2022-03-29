@@ -3,7 +3,11 @@ from math import trunc
 import time
 import datetime
 import api
-
+"""
+TODO
+Update this to check marketmovement in last 6{maybe custom} hours and update the pricePerUnitToBuy and Sell according to that
+always remember 1.5% margin should always be there between buy and sell
+"""
 # Enter your API Key and Secret here. If you don't have one, you can generate it from the website.
 key = config('key',default='')
 secret = config('secret',default='')
@@ -47,7 +51,6 @@ startTime = time.time()
 while(True):
     # print (datetime.datetime.now())
     balancePair = checkUserBalance(secret_bytes, "INR", 150)
-    # print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>150))
 
     if balancePair['availableBalance']:
         quantityToBuy = truncate(float(balancePair['availableBalance'] - reduceBalance)/pricePerUnitToBuy,5)
@@ -56,11 +59,9 @@ while(True):
             createOrder(pricePerUnitToBuy, quantityToBuy, "buy")
 
     balancePair = checkUserBalance(secret_bytes, "BTC", 0.00001, True)
-    # print("{0} present in wallet: {1}".format("BTC",balancePair['availableBalance']>0))
 
     if balancePair['availableBalance']:
         createOrder(pricePerUnitToSell,balancePair['quantity'],"sell")
-    # print("\n")
 
     currenTime = time.time()
     # print wallet balance
