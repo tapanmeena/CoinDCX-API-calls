@@ -18,7 +18,7 @@ secret = config('secret', default='')
 secret_bytes = bytes(secret, encoding='utf-8')
 
 STOP_LOSS = -0.03
-STOP_PROFIT = 0.01
+STOP_PROFIT = 0.02
 DELTA_CHANGE = 0.03
 """
 TODO
@@ -40,8 +40,8 @@ def truncate(number, decimals=0):
     return trunc(number * factor) / factor
 
 
-def checkUserBalance(secret_bytes, currency, threshold, printAmount = False):
-    data = api.GetUserBalance(key, secret_bytes, currency)
+def checkUserBalance(obj, currency, threshold, printAmount = False):
+    data = obj.GetUserBalance(currency)
 
     if float(data['balance']) > threshold:
         if printAmount:
@@ -50,8 +50,8 @@ def checkUserBalance(secret_bytes, currency, threshold, printAmount = False):
     return {"quantity":0,"availableBalance":0}
 
 
-def CheckMarketCoinPairs(coinPairs):
-    data = api.GetMarketDetails()
+def CheckMarketCoinPairs(obj, coinPairs):
+    data = obj.GetMarketDetails()
     previous = datetime.now()- timedelta(minutes=5)
     previous = datetime.timestamp(previous)
     previous = int(round(previous * 1000))
@@ -59,7 +59,7 @@ def CheckMarketCoinPairs(coinPairs):
     for pair in coinPairs:
         for item in data:
             if pair['coindcx_name'] == item['coindcx_name']:
-                market_data = api.GetMarketHistory(item['pair'], "1m", previous)        
+                market_data = obj.GetMarketHistory(item['pair'], "1m", previous)        
                 currentIntervalMax = market_data[0]['high']
                 currentIntervalMin = market_data[len(market_data)-1]['high']
                 delta = (currentIntervalMax - currentIntervalMin)/ currentIntervalMax
@@ -69,8 +69,8 @@ def CheckMarketCoinPairs(coinPairs):
     return
 
 
-def GenerateBoughtPairArray(coinPairs):
-    data = api.GetTradeHistory(key, secret_bytes,100)
+def GenerateBoughtPairArray(obj, coinPairs):
+    data = obj.GetTradeHistory(100)
     coinSymbolList = [item['coindcx_name'] for item in coinPairs]
     data = [item for item in data if item['side'] == 'buy']
     data = [item for item in data if item['symbol'] in coinSymbolList]
@@ -85,7 +85,7 @@ def GenerateBoughtPairArray(coinPairs):
             dataDup.append(item)
     data = dataDup
 
-    bought_coin_pairs = api.GetUserBalance(key, secret_bytes)
+    bought_coin_pairs = obj.GetUserBalance()
     bought_coin_pairs = [item for item in bought_coin_pairs if item['currency'] != 'INR' and truncate(float(item['balance']), 5) > 0]
 
     bought_coin_array = []
@@ -97,8 +97,8 @@ def GenerateBoughtPairArray(coinPairs):
     return bought_coin_array
 
 
-def checkMarketForSell(bought_array, previous_change):
-    data = api.GetMarketDetails()
+def checkMarketForSell(obj, bought_array, previous_change):
+    data = obj.GetMarketDetails()
     coin_symbol_list = [coin['symbol'] for coin in bought_array]
     data = [item for item in data if item['coindcx_name'] in coin_symbol_list]
 
@@ -109,7 +109,7 @@ def checkMarketForSell(bought_array, previous_change):
     for coin in bought_array:
         for item in data:
             if coin['symbol'] == item['coindcx_name']:
-                market_data = api.GetMarketHistory(item['pair'], "1m", previous)
+                market_data = obj.GetMarketHistory(item['pair'], "1m", previous)
 
                 currentPrice = float(market_data[0]['high'])
                 boughtPrice = float(coin['bought_price'])
@@ -127,8 +127,8 @@ def checkMarketForSell(bought_array, previous_change):
                 previous_change = temp_previous_change
 
                 if ChangeInPrice >= STOP_PROFIT or ChangeInPrice <= STOP_LOSS:
-                    balancePair = checkUserBalance(secret_bytes, item['target_currency_short_name'], 0, True)
-                    api.CreateOrder(key, secret_bytes, "sell", "limit_order", item['coindcx_name'], currentPrice, balancePair['quantity'])
+                    balancePair = checkUserBalance(item['target_currency_short_name'], 0, True)
+                    obj.CreateOrder("sell", "limit_order", item['coindcx_name'], currentPrice, balancePair['quantity'])
                     print ("----------------------Please sell {0} coin at {1} because currect percentage increase is {2}----------------------".format(coin['symbol'], currentPrice, ChangeInPrice*100))
                 break
     return previous_change
@@ -145,11 +145,12 @@ def ImportFile(filename):
 coin_pairs = ImportFile("CoinPairs.json")
 start_time = time.time()
 end_time = start_time
+dcx = api.CoinDCX(key, secret_bytes)
 while(True):
-    balancePair = checkUserBalance(secret_bytes, "INR", 150)
+    balancePair = checkUserBalance(dcx, "INR", 150)
     if balancePair['availableBalance']:
-        suggestedBuyingArray = CheckMarketCoinPairs(coin_pairs)
-        if len(suggestedBuyingArray)>0:
+        suggestedBuyingArray = CheckMarketCoinPairs(dcx, coin_pairs)
+        if suggestedBuyingArray is not None and len(suggestedBuyingArray)>0:
             buyingIndex = randint(0, len(suggestedBuyingArray)-1)
             selectedCoinPair = suggestedBuyingArray[buyingIndex]
             pricePerUnitToBuy = selectedCoinPair['current_price']
@@ -159,13 +160,13 @@ while(True):
                 buyingAmount = balancePair['availableBalance'] - 50
 
             quantityToBuy = truncate(float(buyingAmount)/pricePerUnitToBuy, selectedCoinPair['target_precision'])
-            api.CreateOrder(key, secret_bytes, "buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
+            dcx.CreateOrder("buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
 
     if end_time - start_time >= 900 or start_time == end_time:
         boughtArray = GenerateBoughtPairArray(coin_pairs)
         previousChange = boughtArray
 
-    previousChange = checkMarketForSell(boughtArray, previousChange)
+    previousChange = checkMarketForSell(dcx, boughtArray, previousChange)
 
     end_time = time.time()
     time.sleep(60)
