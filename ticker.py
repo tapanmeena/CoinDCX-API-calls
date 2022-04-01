@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from api import GetMarketHistory
+from api import CoinDCX
 
 CoinPair = "I-BTC_INR"
 buyPrice = 3300000
@@ -11,14 +11,14 @@ moneyInWallet = 237000
 btcInWallet = 0
 investedAmount = moneyInWallet
 
-def getCurrentPrice():
-    market_data = GetMarketHistory("I-BTC_INR","1m")
+def getCurrentPrice(obj):
+    market_data = obj.GetMarketHistory("I-BTC_INR","1m")
     currentPrice = float(market_data[0]['high'])
     return currentPrice
 
-def checkMarketPrice(coinPair, price):
+def checkMarketPrice(obj, coinPair, price):
     global moneyInWallet, PNLtillnow, btcInWallet, counter
-    market_data = GetMarketHistory(coinPair, "1m")
+    market_data = obj.GetMarketHistory(coinPair, "1m")
     currentPrice = float(market_data[0]['high'])
     # currentPrice = tp
     # print ("Current price {0}, requested price {1}".format(currentPrice, price))
@@ -41,17 +41,18 @@ def checkMarketPrice(coinPair, price):
 
 
 start = time.time()
+dcx = CoinDCX()
 while(True):
     # testprice = int(input())
     if counter == 0:
-        checkMarketPrice(CoinPair, buyPrice)#, testprice)
+        checkMarketPrice(dcx, CoinPair, buyPrice)#, testprice)
     else: 
-        checkMarketPrice(CoinPair, sellPrice)#, testprice)
+        checkMarketPrice(dcx, CoinPair, sellPrice)#, testprice)
     end = time.time()
     timeElapsed = end - start
     if timeElapsed >= 900:
         start = time.time()
-        currentPrice = getCurrentPrice()
+        currentPrice = getCurrentPrice(dcx)
         currentValue = (float(currentPrice) * float(btcInWallet)) + moneyInWallet
         print ("PNL at {0} is {1} at price of {2} and wallet value is {3}".format(datetime.now(),currentValue - investedAmount, currentPrice, currentValue))
     time.sleep(60)
