@@ -10,7 +10,6 @@ CANDLES = '/market_data/candles'
 VERSION = 'v1'
 EXCHANGE_BASE = API_HOST + '/exchange/' + VERSION
 
-
 def SendGetRequest(url):
     try:
         response = requests.get(url)
@@ -138,3 +137,54 @@ def CreateOrder(key, secret_bytes, side, orderType, coinPair, pricePerUnit, quan
     else:
         print(data)
         return
+
+
+def CancelOrders(key, secret_bytes, pair_name, side = None):
+    # Generating a timestamp.
+    timeStamp = int(round(time.time() * 1000))
+
+    body = {
+        "market": pair_name,
+        "timestamp": timeStamp
+    }
+
+    if side is not None:
+        body["side"] = side
+
+    json_body = json.dumps(body, separators=(',', ':'))
+    url = EXCHANGE_BASE + '/orders/cancel_all'
+
+    headers = GenerateHeaders(key, secret_bytes, json_body)
+    data = SendPostRequest(url, json_body, headers)
+
+    # check if order executed or not
+    if data.get('orders') is not None:
+        return data
+    else:
+        print(data)
+        return
+
+
+def GetActiveOrders(key, secret_bytes):
+    # Generating a timestamp.
+    timeStamp = int(round(time.time() * 1000))
+
+    body = {
+        "timestamp": timeStamp
+    }
+
+    json_body = json.dumps(body, separators = (',', ':'))
+
+    signature = hmac.new(secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
+
+    url = "https://api.coindcx.com/exchange/v1/orders/active_orders"
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-AUTH-APIKEY': key,
+        'X-AUTH-SIGNATURE': signature
+    }
+
+    response = requests.post(url, data = json_body, headers = headers)
+    data = response.json()
+    return data
