@@ -78,18 +78,8 @@ class CoinDCX:
         body = {
             "timestamp": timeStamp
         }
-
         json_body = json.dumps(body, separators=(',', ':'))
-
-        signature = hmac.new(self.secret_bytes, json_body.encode(),
-                            hashlib.sha256).hexdigest()
-
-        headers = {
-            'Content-Type': 'application/json',
-            'X-AUTH-APIKEY': self.key,
-            'X-AUTH-SIGNATURE': signature
-        }
-
+        headers = self.GenerateHeaders(json_body)
         url = self.EXCHANGE_BASE+"/users/balances"
         data = self.SendPostRequest(url, json_body, headers)
 
@@ -114,7 +104,7 @@ class CoinDCX:
             "limit": limit
         }
         json_body = json.dumps(body, separators = (',', ':'))
-        headers = self.GenerateHeaders(self.key, self.secret_bytes, json_body)
+        headers = self.GenerateHeaders(json_body)
         data = self.SendPostRequest(url, json_body, headers)
         return data
 
@@ -133,8 +123,7 @@ class CoinDCX:
         }
         json_body = json.dumps(body, separators=(',', ':'))
         url = self.EXCHANGE_BASE + '/orders/create'
-
-        headers = self.GenerateHeaders(self.key, self.secret_bytes, json_body)
+        headers = self.GenerateHeaders(json_body)
         data = self.SendPostRequest(url, json_body, headers)
 
         # check if order executed or not
@@ -160,7 +149,7 @@ class CoinDCX:
         json_body = json.dumps(body, separators=(',', ':'))
         url = self.EXCHANGE_BASE + '/orders/cancel_all'
 
-        headers = self.GenerateHeaders(self.key, self.secret_bytes, json_body)
+        headers = self.GenerateHeaders(json_body)
         data = self.SendPostRequest(url, json_body, headers)
 
         # check if order executed or not
@@ -174,22 +163,12 @@ class CoinDCX:
     def GetActiveOrders(self):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
-
         body = {
             "timestamp": timeStamp
         }
-
         json_body = json.dumps(body, separators = (',', ':'))
-
-        signature = hmac.new(self.secret_bytes, json_body.encode(), hashlib.sha256).hexdigest()
-
         url = self.EXCHANGE_BASE + "/orders/active_orders"
-
-        headers = {
-            'Content-Type': 'application/json',
-            'X-AUTH-APIKEY': self.key,
-            'X-AUTH-SIGNATURE': signature
-        }
+        headers = self.GenerateHeaders(json_body)
 
         response = requests.post(url, data = json_body, headers = headers)
         data = response.json()
