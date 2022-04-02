@@ -16,17 +16,17 @@ def ImportFile(filename):
     return data
 
 
-def checkMarketMovement(coinPair, printValue=False):
+def checkMarketMovement(obj, coinPair, printValue=False):
     timeStamp = time.time()
     currentTimeStamp = time.time()
-    market_data = api.GetMarketHistory(coinPair, "1m", timeStamp)
+    market_data = obj.GetMarketHistory(coinPair, "1m", timeStamp)
     try:
         currentPrice = float(market_data[0]['close'])
     except:
         return
     for timeMargin in intervals:
         timeStamp = time.time() - timeMargin
-        market_data = api.GetMarketHistory(
+        market_data = obj.GetMarketHistory(
             coinPair, "1m", timeStamp, currentTimeStamp)
         try:
             previousPrice = float(market_data[len(market_data)-1]['close'])
@@ -48,6 +48,7 @@ def checkMarketMovement(coinPair, printValue=False):
 
 
 data = ImportFile('CoinPairs.json')
+dcx = api.CoinDCX()
 while(True):
     for item in data:
-        checkMarketMovement(item['pair'])
+        checkMarketMovement(dcx, item['pair'])

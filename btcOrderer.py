@@ -28,8 +28,8 @@ def truncate(number, decimals=0):
     factor = 10.0 ** decimals
     return trunc(number * factor) / factor
 
-def checkUserBalance(secret_bytes, currency, threshold, printAmount = False):
-    data = api.GetUserBalance(key, secret_bytes, currency)
+def checkUserBalance(obj,currency, threshold, printAmount = False):
+    data = obj.GetUserBalance(key, currency)
     
     if float(data['balance']) > threshold:
         if printAmount:
@@ -37,8 +37,8 @@ def checkUserBalance(secret_bytes, currency, threshold, printAmount = False):
         return {"quantity":data['balance'],"availableBalance":float(data['balance'])}
     return {"quantity":0,"availableBalance":0}
 
-def createOrder(pricePerUnit, quantity, orderType):
-    data = api.CreateOrder(key, secret_bytes, orderType, "limit_order", "BTCINR", pricePerUnit, round(float(quantity),5))
+def createOrder(obj, pricePerUnit, quantity, orderType):
+    data = obj.CreateOrder(key, orderType, "limit_order", "BTCINR", pricePerUnit, round(float(quantity),5))
     print(data)
     print ("{0} order at {1} for {2} at {3}\n".format(orderType,datetime.datetime.now(), quantity, pricePerUnit))
 
@@ -48,17 +48,18 @@ pricePerUnitToBuy = int(input("Price per unit to buy BTC at: "))
 pricePerUnitToSell = int(input("Price per unit to sell BTC at: "))
 reduceBalance = 50
 startTime = time.time()
+dcx = api.CoinDCX(key, secret_bytes)
 while(True):
     # print (datetime.datetime.now())
-    balancePair = checkUserBalance(secret_bytes, "INR", 150)
+    balancePair = checkUserBalance(dcx, "INR", 150)
 
     if balancePair['availableBalance']:
         quantityToBuy = truncate(float(balancePair['availableBalance'] - reduceBalance)/pricePerUnitToBuy,5)
         if quantityToBuy > 0.00001:
         # print(quantityToBuy)
-            createOrder(pricePerUnitToBuy, quantityToBuy, "buy")
+            createOrder(dcx, pricePerUnitToBuy, quantityToBuy, "buy")
 
-    balancePair = checkUserBalance(secret_bytes, "BTC", 0.00001, True)
+    balancePair = checkUserBalance(dcx, "BTC", 0.00001, True)
 
     if balancePair['availableBalance']:
         createOrder(pricePerUnitToSell,balancePair['quantity'],"sell")
@@ -66,9 +67,9 @@ while(True):
     currenTime = time.time()
     # print wallet balance
     if (currenTime - startTime) > 3600:
-        balancePair = checkUserBalance(secret_bytes, "INR", 50)
+        balancePair = checkUserBalance(dcx, "INR", 50)
         print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>150))
-        balancePair = checkUserBalance(secret_bytes, "BTC", 0.00001, True)
+        balancePair = checkUserBalance(dcx, "BTC", 0.00001, True)
         print("{0} present in wallet: {1}".format("BTC",balancePair['availableBalance']>0))
         print("\n")
         startTime = time.time()
