@@ -2,8 +2,8 @@ import time
 import api
 import json
 
-BUY_THRESHOLD = -0.015
-SELL_THRESHOLD = 0.02
+BUY_THRESHOLD = -0.05
+SELL_THRESHOLD = 0.03
 
 intervals = [300, 600, 900, 1200, 1500, 1800, 2700, 3600]
 

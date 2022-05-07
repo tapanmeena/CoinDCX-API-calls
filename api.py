@@ -173,3 +173,70 @@ class CoinDCX:
         response = requests.post(url, data = json_body, headers = headers)
         data = response.json()
         return data
+
+    def PlaceMarginOrder(self, side, orderType, coinPair, pricePerUnit, quantity, ecode, leverage):
+        # Generating a timestamp.
+        timeStamp = int(round(time.time() * 1000))
+
+        body = {
+            "side": side,
+            "order_type": orderType,
+            "market": coinPair,
+            "price": pricePerUnit,
+            "quantity": quantity,
+            "ecode": ecode,
+            "leverage": leverage,
+            "timestamp": timeStamp
+        }
+        json_body = json.dumps(body, separators=(',', ':'))
+        url = self.EXCHANGE_BASE + '/margin/create'
+        headers = self.GenerateHeaders(json_body)
+        data = self.SendPostRequest(url, json_body, headers)
+
+        # check if order executed or not
+        if data.get('orders') is not None:
+            return data
+        else:
+            print(data)
+            return
+
+    def CancelMarginOrder(self, id):
+        # Generating a timestamp.
+        timeStamp = int(round(time.time() * 1000))
+
+        body = {
+            "id": id,
+            "timestamp": timeStamp
+        }
+        json_body = json.dumps(body, separators=(',', ':'))
+        url = self.EXCHANGE_BASE + '/margin/cancel'
+        headers = self.GenerateHeaders(json_body)
+        data = self.SendPostRequest(url, json_body, headers)
+
+        # check if order executed or not
+        if data.get('orders') is not None:
+            return data
+        else:
+            print(data)
+            return
+    
+    def ExitMarginOrder(self, id):
+        # Generating a timestamp.
+        timeStamp = int(round(time.time() * 1000))
+
+        body = {
+            "id": id,
+            "timestamp": timeStamp
+        }
+        json_body = json.dumps(body, separators=(',', ':'))
+        url = self.EXCHANGE_BASE + '/margin/exit'
+        headers = self.GenerateHeaders(json_body)
+        data = self.SendPostRequest(url, json_body, headers)
+
+        # check if order executed or not
+        if data.get('orders') is not None:
+            return data
+        else:
+            print(data)
+            return
+    
