@@ -1,5 +1,3 @@
-FUCK OFF from this repository JK
-
 run below command to install all dependencies
 
 ```
