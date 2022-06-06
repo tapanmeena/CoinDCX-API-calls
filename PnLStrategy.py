@@ -62,8 +62,9 @@ def CheckMarketCoinPairs(obj, coinPairs):
                 market_data = obj.GetMarketHistory(item['pair'], "1m", previous)        
                 currentIntervalMax = market_data[0]['high']
                 currentIntervalMin = market_data[len(market_data)-1]['high']
-                delta = (currentIntervalMax - currentIntervalMin)/ currentIntervalMax
+                delta = (currentIntervalMax - currentIntervalMin)/ currentIntervalMin
                 if delta >= DELTA_CHANGE:
+                    print ("Name: {0} Max: {1} Min: {2} Delta: {3} CurrentPrice: {4}".format(item['coindcx_name'],currentIntervalMax,currentIntervalMin,delta,market_data[0]['close']))
                     coinArray.append({"name":item['coindcx_name'],"max":currentIntervalMax,"min":currentIntervalMin, "delta": delta, "target_precision":item['target_currency_precision'],"current_price":market_data[0]['close']})
                 break
     return
@@ -163,10 +164,10 @@ while(True):
             dcx.CreateOrder("buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
 
     if end_time - start_time >= 900 or start_time == end_time:
-        boughtArray = GenerateBoughtPairArray(coin_pairs)
+        boughtArray = GenerateBoughtPairArray(dcx, coin_pairs)
         previousChange = boughtArray
 
-    previousChange = checkMarketForSell(dcx, boughtArray, previousChange)
+        previousChange = checkMarketForSell(dcx, boughtArray, previousChange)
 
     end_time = time.time()
     time.sleep(60)

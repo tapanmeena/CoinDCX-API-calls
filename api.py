@@ -174,7 +174,7 @@ class CoinDCX:
         data = response.json()
         return data
 
-    def PlaceMarginOrder(self, side, orderType, coinPair, pricePerUnit, quantity, ecode, leverage):
+    def PlaceMarginOrder(self, coinPair, quantity, pricePerUnit, leverage, side, orderType, targetPrice, ecode):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
 
@@ -186,6 +186,7 @@ class CoinDCX:
             "quantity": quantity,
             "ecode": ecode,
             "leverage": leverage,
+            "target_price": targetPrice,
             "timestamp": timeStamp
         }
         json_body = json.dumps(body, separators=(',', ':'))
@@ -194,11 +195,11 @@ class CoinDCX:
         data = self.SendPostRequest(url, json_body, headers)
 
         # check if order executed or not
-        if data.get('orders') is not None:
+        if len(data)>0 and data[0].get('orders') is not None:
             return data
         else:
             print(data)
-            return
+            return data
 
     def CancelMarginOrder(self, id):
         # Generating a timestamp.
