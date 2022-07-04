@@ -109,7 +109,7 @@ class CoinDCX:
         return data
 
 
-    def CreateOrder(self, side, orderType, coinPair, pricePerUnit, quantity):
+    def CreateTradeOrder(self, side, orderType, coinPair, pricePerUnit, quantity):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
 
