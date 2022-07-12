@@ -161,7 +161,7 @@ while(True):
                 buyingAmount = balancePair['availableBalance'] - 50
 
             quantityToBuy = truncate(float(buyingAmount)/pricePerUnitToBuy, selectedCoinPair['target_precision'])
-            dcx.CreateOrder("buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
+            dcx.CreateTradeOrder("buy", "limit_order", selectedCoinPair["name"], pricePerUnitToBuy, quantityToBuy)
 
     if end_time - start_time >= 900 or start_time == end_time:
         boughtArray = GenerateBoughtPairArray(dcx, coin_pairs)

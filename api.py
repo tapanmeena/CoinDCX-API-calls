@@ -109,7 +109,7 @@ class CoinDCX:
         return data
 
 
-    def CreateOrder(self, side, orderType, coinPair, pricePerUnit, quantity):
+    def CreateTradeOrder(self, side, orderType, coinPair, pricePerUnit, quantity):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
 
@@ -174,6 +174,7 @@ class CoinDCX:
         data = response.json()
         return data
 
+
     def PlaceMarginOrder(self, coinPair, quantity, pricePerUnit, leverage, side, orderType, targetPrice, ecode):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
@@ -201,6 +202,7 @@ class CoinDCX:
             print(data)
             return data
 
+
     def CancelMarginOrder(self, id):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
@@ -221,6 +223,7 @@ class CoinDCX:
             print(data)
             return
     
+
     def ExitMarginOrder(self, id):
         # Generating a timestamp.
         timeStamp = int(round(time.time() * 1000))
