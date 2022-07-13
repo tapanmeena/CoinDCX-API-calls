@@ -44,7 +44,7 @@ def checkUserBalance(obj,currency, threshold, printAmount = False):
     return {"quantity":0,"availableBalance":0}
 
 def createOrder(obj, pricePerUnit, quantity, orderType):
-    data = obj.CreateOrder(orderType, "limit_order", "MATICINR", pricePerUnit, truncate(float(quantity),2))
+    data = obj.CreateTradeOrder(orderType, "limit_order", "MATICINR", pricePerUnit, truncate(float(quantity),2))
     print(data)
     print ("{0} order at {1} for {2} at {3}\n".format(orderType,datetime.datetime.now(), quantity, pricePerUnit))
 
@@ -57,7 +57,7 @@ dcx = api.CoinDCX(key, secret_bytes)
 messaingClient = TelegramApi.Telegram(token, chatid)
 while(True):
     # print (datetime.datetime.now())
-    balancePair = checkUserBalance(dcx, "INR", 150)
+    balancePair = checkUserBalance(dcx, "INR", 50)
 
     if balancePair['availableBalance']:
         quantityToBuy = truncate(float(balancePair['availableBalance'] - reduceBalance)/pricePerUnitToBuy,2)
@@ -77,7 +77,7 @@ while(True):
     # print wallet balance
     if (currenTime - startTime) > 3600:
         balancePair = checkUserBalance(dcx, "INR", 50)
-        print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>150))
+        print("{0} present in wallet: {1}".format("INR",balancePair['availableBalance']>50))
         balancePair = checkUserBalance(dcx, "MATIC", 0.01, True)
         print("{0} present in wallet: {1}".format("MATIC",balancePair['availableBalance']>0))
         print("\n")
