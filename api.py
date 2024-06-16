@@ -251,27 +251,23 @@ class CoinDCX:
         body = {
         "timestamp":timeStamp , # EPOCH timestamp in seconds
         "order": {
-        "side": side, # buy OR sell
-        "pair": pair, # instrument.string
-        "order_type": order_type, # market_order OR limit_order 
-        "price": price, #numeric value
-        "total_quantity": total_quantity, #numerice value
-        "leverage": leverage, #numerice value
-        "notification": notification, # no_notification OR email_notification OR push_notification
-        "time_in_force": time_in_force, # good_till_cancel OR fill_or_kill OR immediate_or_cancel
-        "hidden": False, # True or False
-        "post_only": False # True or False
-        }
+            "side": side, # buy OR sell
+            "pair": pair, # instrument.string
+            "order_type": order_type, # market_order OR limit_order 
+            "price": price, #numeric value
+            "total_quantity": total_quantity, #numerice value
+            "leverage": leverage, #numerice value
+            "notification": notification, # no_notification OR email_notification OR push_notification
+            "time_in_force": time_in_force, # good_till_cancel OR fill_or_kill OR immediate_or_cancel
+            "hidden": False, # True or False
+            "post_only": False # True or False
+            }
         }
 
         json_body = json.dumps(body, separators=(',', ':'))
-        url = self.EXCHANGE_BASE + '/derivatives/future/orders/create'
+        url = self.EXCHANGE_BASE + '/derivatives/futures/orders/create'
         headers = self.GenerateHeaders(json_body)
         data = self.SendPostRequest(url, json_body, headers)
-
-        # check if order executed or not
-        if data.get('orders') is not None:
-            return data
-        else:
-            print(data)
-            return data
+        
+        print(data)
+        return data
